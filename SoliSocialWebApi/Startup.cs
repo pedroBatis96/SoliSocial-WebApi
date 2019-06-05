@@ -36,17 +36,17 @@ namespace SoliSocialWebApi
                 builder =>
                 {
                     builder
-                                        .AllowAnyOrigin()
-                                        .AllowAnyHeader()
-                                        .AllowAnyMethod()
-                                        .AllowCredentials();
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
                     
                 });
             });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddDbContext<SoliSocialDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("SoliSocialDb"))
+                options.UseMySql(Configuration.GetConnectionString("SoliSocialDb"))
             );
 
             services.AddAuthentication(auth =>

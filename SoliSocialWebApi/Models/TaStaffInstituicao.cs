@@ -5,8 +5,8 @@ namespace SoliSocialWebApi.Models
 {
     public partial class TaStaffInstituicao
     {
-        public Guid UserId { get; set; }
-        public Guid InstituicaoId { get; set; }
+        public string UserId { get; set; }
+        public string InstituicaoId { get; set; }
         public long DepartamentoId { get; set; }
         public DateTime DataEntrada { get; set; }
 

@@ -80,9 +80,9 @@ namespace SoliSocialWebApi.Controllers.Institution
                                   .Include(n => n.TdNoticias)
                                   .Include(e => e.TdEvento)
                                   .Include(f => f.TaUserInstituicaoFav)
-                                  .FirstOrDefault(t => t.Id == model.InstId);
+                                  .FirstOrDefault(t => t.Id == model.InstId.ToString());
 
-                if (instituicao.TaUserInstituicaoFav.FirstOrDefault(t => t.UserId.ToString() == userId) != null)
+                if (instituicao.TaUserInstituicaoFav.FirstOrDefault(t=>t.UserId==userId && t.InstituicaoId == model.InstId) != null)
                 {
                     favorited = true;
                 }
@@ -130,7 +130,7 @@ namespace SoliSocialWebApi.Controllers.Institution
             {
                 string userId = User.Claims.First().Value;
 
-                var favorited = context.TaUserInstituicaoFav.FirstOrDefault(t => t.UserId.ToString() == userId && t.InstituicaoId == model.InstId);
+                var favorited = context.TaUserInstituicaoFav.FirstOrDefault(t => t.UserId.ToString() == userId && t.InstituicaoId == model.InstId.ToString());
 
                 if(favorited != null)
                 {
@@ -142,8 +142,8 @@ namespace SoliSocialWebApi.Controllers.Institution
                 {
                     TaUserInstituicaoFav favoritedNew = new TaUserInstituicaoFav
                     {
-                        InstituicaoId = model.InstId,
-                        UserId = Guid.Parse(userId)
+                        InstituicaoId = model.InstId.ToString(),
+                        UserId = userId
                     };
                     context.TaUserInstituicaoFav.Add(favoritedNew);
                     context.SaveChanges();

@@ -7,7 +7,7 @@ namespace SoliSocialWebApi.ViewModels.InstitutionManagement
 {
     public class InstitutionConUpdate
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Email { get; set; }
         public string Numero { get; set; }
         public string Pagina { get; set; }

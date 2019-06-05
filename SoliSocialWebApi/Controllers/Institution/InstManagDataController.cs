@@ -93,6 +93,7 @@ namespace SoliSocialWebApi.Controllers
                 TdUsers user = context.TdUsers.FirstOrDefault(t => t.Id.ToString() == User.Claims.First().Value);
                 TdInstituicao instituicao = new TdInstituicao
                 {
+                    Id = Guid.NewGuid().ToString(),
                     Acronimo = model.Acronimo,
                     CriadoPor = user.Id,
                     DataCriacao = DateTime.Now,
@@ -111,10 +112,11 @@ namespace SoliSocialWebApi.Controllers
                 context.TdInstituicao.Add(instituicao);
                 context.SaveChanges();
 
+                string newInstId = instituicao.Id;
                 string userRoleCode = Codes.UserRolesCodes.InstAdmin;
                 string userDepartmentCodeAdmin = Defaults.UserInstRoles.Admin;
                 string userDepartmentCodeVolun = Defaults.UserInstRoles.Voluntário;
-                Guid userRoleId = context.TdUserRoles.FirstOrDefault(t => t.Name == userRoleCode).Id;
+                string userRoleId = context.TdUserRoles.FirstOrDefault(t => t.Name == userRoleCode).Id;
 
                 if (!context.TaUserRoles.Any(t => t.UserId == user.Id && t.RoleId == userRoleId))
                 {
@@ -126,30 +128,25 @@ namespace SoliSocialWebApi.Controllers
                     context.TaUserRoles.Add(userRole);
                 }
 
-                List<TdDepartamentosInstituicao> departamentosInstituicao = new List<TdDepartamentosInstituicao>
-                {
-                    new TdDepartamentosInstituicao
+                var administracao = new TdDepartamentosInstituicao
                 {
                     IdPai = null,
                     Descricao = userDepartmentCodeAdmin,
-                    InstituicaoId = instituicao.Id,
-                },
-                    new TdDepartamentosInstituicao
-                    {
-                        IdPai = null,
-                        Descricao = userDepartmentCodeVolun,
-                        InstituicaoId = instituicao.Id,
-                    }
+                    InstituicaoId = newInstId,
                 };
-
-                foreach (var departamento in departamentosInstituicao) {
-                    context.TdDepartamentosInstituicao.Add(departamento);
-                }
+                var voluntarios = new TdDepartamentosInstituicao
+                {
+                    IdPai = null,
+                    Descricao = userDepartmentCodeVolun,
+                    InstituicaoId = newInstId,
+                };
+                context.TdDepartamentosInstituicao.Add(administracao);
+                context.TdDepartamentosInstituicao.Add(voluntarios);
                 context.SaveChanges();
 
                 TaStaffInstituicao staffInstituicao = new TaStaffInstituicao
                 {
-                    DepartamentoId = departamentosInstituicao.FirstOrDefault(t=>t.Descricao == userDepartmentCodeAdmin).Id,
+                    DepartamentoId = administracao.Id,
                     InstituicaoId = instituicao.Id,
                     UserId = user.Id,
                 };

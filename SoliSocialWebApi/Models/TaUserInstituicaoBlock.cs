@@ -5,8 +5,8 @@ namespace SoliSocialWebApi.Models
 {
     public partial class TaUserInstituicaoBlock
     {
-        public Guid UserId { get; set; }
-        public Guid InstituicaoId { get; set; }
+        public string UserId { get; set; }
+        public string InstituicaoId { get; set; }
 
         public virtual TdInstituicao Instituicao { get; set; }
         public virtual TdUsers User { get; set; }

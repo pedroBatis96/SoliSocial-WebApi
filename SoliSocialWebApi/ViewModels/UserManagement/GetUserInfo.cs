@@ -7,6 +7,6 @@ namespace SoliSocialWebApi.ViewModels.UserManagement
 {
     public class GetUserInfo
     {
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
     }
 }

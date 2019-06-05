@@ -4,6 +4,6 @@ namespace SoliSocialWebApi.ViewModels.InstitutionManagement
 {
     public class InstitutionMain
     {
-        public Guid InstId { get; set; }
+        public string InstId { get; set; }
     }
 }

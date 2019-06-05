@@ -18,7 +18,7 @@ namespace SoliSocialWebApi.Models
             TdTarefas = new HashSet<TdTarefas>();
         }
 
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Nome { get; set; }
         public string Acronimo { get; set; }
         public string Descricao { get; set; }
@@ -32,7 +32,7 @@ namespace SoliSocialWebApi.Models
         public string Logo { get; set; }
         public DateTime DataCriacao { get; set; }
         public DateTime? DataAlteracao { get; set; }
-        public Guid CriadoPor { get; set; }
+        public string CriadoPor { get; set; }
 
         public virtual TdUsers CriadoPorNavigation { get; set; }
         public virtual ICollection<TaInstDoc> TaInstDoc { get; set; }

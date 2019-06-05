@@ -12,10 +12,10 @@ namespace SoliSocialWebApi.Models
         }
 
         public long Id { get; set; }
-        public Guid? InstituicaoId { get; set; }
+        public string InstituicaoId { get; set; }
         public int? NumParticMax { get; set; }
         public string Descricao { get; set; }
-        public bool Turnos { get; set; }
+        public sbyte Turnos { get; set; }
 
         public virtual TdInstituicao Instituicao { get; set; }
         public virtual ICollection<TaParticEvento> TaParticEvento { get; set; }

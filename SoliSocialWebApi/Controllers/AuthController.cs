@@ -93,6 +93,7 @@ namespace SoliSocialWebApi.Controllers
 
             var Newuser = new TdUsers
             {
+                Id = Guid.NewGuid().ToString(),
                 Name = registo.Name,
                 NormalizedName = registo.Name.ToUpper(),
                 Username = CalcUsername(registo.Name),
@@ -101,7 +102,7 @@ namespace SoliSocialWebApi.Controllers
                 DateOfBirth = registo.BirthDate,
                 Age = CalcAge(registo.BirthDate),
                 Email = registo.Email,
-                EmailConfirmed = false,
+                EmailConfirmed = 0,
                 Genero = registo.Gender,
                 ConcurrencyStamp = RandomString(36)
             };

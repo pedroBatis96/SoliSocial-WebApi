@@ -11,7 +11,7 @@ namespace SoliSocialWebApi.Models
         }
 
         public long Id { get; set; }
-        public Guid InstituicaoId { get; set; }
+        public string InstituicaoId { get; set; }
         public long? IdPai { get; set; }
         public string Descricao { get; set; }
 

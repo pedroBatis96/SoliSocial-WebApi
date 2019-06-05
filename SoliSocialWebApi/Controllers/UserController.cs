@@ -52,7 +52,7 @@ namespace SoliSocialWebApi.Controllers
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
 
-            TdUsers user = context.TdUsers.Include(t => t.TdInstituicao).Include(t => t.TaStaffInstituicao).FirstOrDefault(t => t.Id.ToString() == User.Claims.First().Value);
+            var user = context.TdUsers.Include(t => t.TdInstituicao).Include(t => t.TaStaffInstituicao).FirstOrDefault(t => t.Id.ToString() == User.Claims.First().Value);
             var result = mapToUser(user);
             return Newtonsoft.Json.JsonConvert.SerializeObject(result);
         }
@@ -126,12 +126,12 @@ namespace SoliSocialWebApi.Controllers
                     return (BadRequest(new { err = "Já existe um utilizador com esse email" }));
                 }
                 user.Email = model.Email;
-                user.EmailConfirmed = false;
+                user.EmailConfirmed = 0;
             }
             if (!string.IsNullOrWhiteSpace(model.Phonenumber))
             {
                 user.Phonenumber = model.Phonenumber;
-                user.PhonenumberConfirmed = false;
+                user.PhonenumberConfirmed = 0;
             }
             if (!string.IsNullOrWhiteSpace(model.Bio))
             {

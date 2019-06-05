@@ -14,11 +14,12 @@ namespace SoliSocialWebApi.Models
             TaUserRoles = new HashSet<TaUserRoles>();
             TdEvento = new HashSet<TdEvento>();
             TdInstituicao = new HashSet<TdInstituicao>();
+            TdNoticias = new HashSet<TdNoticias>();
         }
 
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Email { get; set; }
-        public bool EmailConfirmed { get; set; }
+        public sbyte EmailConfirmed { get; set; }
         public string PasswordHash { get; set; }
         public string Name { get; set; }
         public string NormalizedName { get; set; }
@@ -29,7 +30,7 @@ namespace SoliSocialWebApi.Models
         public string Bio { get; set; }
         public string Imagem { get; set; }
         public string Phonenumber { get; set; }
-        public bool PhonenumberConfirmed { get; set; }
+        public sbyte PhonenumberConfirmed { get; set; }
         public DateTime DataCriacao { get; set; }
         public DateTime? DataAlteracao { get; set; }
         public string ConcurrencyStamp { get; set; }
@@ -41,5 +42,6 @@ namespace SoliSocialWebApi.Models
         public virtual ICollection<TaUserRoles> TaUserRoles { get; set; }
         public virtual ICollection<TdEvento> TdEvento { get; set; }
         public virtual ICollection<TdInstituicao> TdInstituicao { get; set; }
+        public virtual ICollection<TdNoticias> TdNoticias { get; set; }
     }
 }

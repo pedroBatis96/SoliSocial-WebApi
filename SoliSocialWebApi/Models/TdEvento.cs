@@ -13,7 +13,7 @@ namespace SoliSocialWebApi.Models
         }
 
         public long Id { get; set; }
-        public Guid InstId { get; set; }
+        public string InstId { get; set; }
         public string Nome { get; set; }
         public string Descricao { get; set; }
         public string Pagina { get; set; }
@@ -23,7 +23,7 @@ namespace SoliSocialWebApi.Models
         public int? NumStaffMaximo { get; set; }
         public DateTime DataInicio { get; set; }
         public DateTime? DataFim { get; set; }
-        public Guid? CriadoPor { get; set; }
+        public string CriadoPor { get; set; }
 
         public virtual TdUsers CriadoPorNavigation { get; set; }
         public virtual TdInstituicao Inst { get; set; }

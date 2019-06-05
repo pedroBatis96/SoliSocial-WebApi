@@ -42,23 +42,26 @@ namespace SoliSocialWebApi.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=localhost;Database=SoliSocial;User Id=SoliSocialUser;Password=taranta22");
+                optionsBuilder.UseMySql("Server=pcdev.pt;Database=admin_solisocial;User Id=admin_solisocial;Password=wt!Rh944");
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasAnnotation("ProductVersion", "2.2.4-servicing-10062");
-
             modelBuilder.Entity<TaEventoImagem>(entity =>
             {
                 entity.ToTable("TA_EVENTO_IMAGEM");
 
+                entity.HasIndex(e => e.EventoId)
+                    .HasName("FK_TA_EVENTO_IMG_TD_EVENTO_idx");
+
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .ValueGeneratedNever();
+                    .HasColumnType("bigint(20)");
 
-                entity.Property(e => e.EventoId).HasColumnName("EVENTO_ID");
+                entity.Property(e => e.EventoId)
+                    .HasColumnName("EVENTO_ID")
+                    .HasColumnType("bigint(20)");
 
                 entity.Property(e => e.Imagem)
                     .IsRequired()
@@ -68,66 +71,85 @@ namespace SoliSocialWebApi.Models
                     .WithMany(p => p.TaEventoImagem)
                     .HasForeignKey(d => d.EventoId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_EVENTO_IMAGEM_TD_EVENTO");
+                    .HasConstraintName("FK_TA_EVENTO_IMG_TD_EVENTO");
             });
 
             modelBuilder.Entity<TaInstDoc>(entity =>
             {
-                entity.HasKey(e => new { e.InstId, e.IdDoc });
+                entity.HasKey(e => new { e.InstId, e.IdDoc })
+                    .HasName("PRIMARY");
 
                 entity.ToTable("TA_INST_DOC");
 
-                entity.Property(e => e.InstId).HasColumnName("INST_ID");
+                entity.HasIndex(e => e.IdDoc)
+                    .HasName("TA_INST_DOC_DOC");
 
-                entity.Property(e => e.IdDoc).HasColumnName("ID_DOC");
+                entity.Property(e => e.InstId)
+                    .HasColumnName("INST_ID")
+                    .HasColumnType("varchar(64)");
+
+                entity.Property(e => e.IdDoc)
+                    .HasColumnName("ID_DOC")
+                    .HasColumnType("bigint(20)");
 
                 entity.HasOne(d => d.IdDocNavigation)
                     .WithMany(p => p.TaInstDoc)
                     .HasForeignKey(d => d.IdDoc)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_INST_DOC_TD_DOC_SUPP");
+                    .HasConstraintName("TA_INST_DOC_DOC");
 
                 entity.HasOne(d => d.Inst)
                     .WithMany(p => p.TaInstDoc)
                     .HasForeignKey(d => d.InstId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_INST_DOC_TD_INSTITUICAO");
+                    .HasConstraintName("TA_INST_DOC_INST");
             });
 
             modelBuilder.Entity<TaInstituicaoImagem>(entity =>
             {
                 entity.ToTable("TA_INSTITUICAO_IMAGEM");
 
+                entity.HasIndex(e => e.InstituicaoId)
+                    .HasName("TA_INST_IMG_INST_idx");
+
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .ValueGeneratedNever();
+                    .HasColumnType("bigint(20)");
 
                 entity.Property(e => e.Image)
                     .IsRequired()
                     .HasColumnName("IMAGE");
 
-                entity.Property(e => e.InstituicaoId).HasColumnName("INSTITUICAO_ID");
+                entity.Property(e => e.InstituicaoId)
+                    .IsRequired()
+                    .HasColumnName("INSTITUICAO_ID")
+                    .HasColumnType("varchar(64)");
 
                 entity.HasOne(d => d.Instituicao)
                     .WithMany(p => p.TaInstituicaoImagem)
                     .HasForeignKey(d => d.InstituicaoId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_INSTITUICAO_IMAGENS_TD_INSTITUICAO");
+                    .HasConstraintName("TA_INST_IMG_INST");
             });
 
             modelBuilder.Entity<TaNoticiaImagens>(entity =>
             {
                 entity.ToTable("TA_NOTICIA_IMAGENS");
 
+                entity.HasIndex(e => e.NoticiaId)
+                    .HasName("FK_TA_NOTICIA_IMAGENS_TD_NOTICIA");
+
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .ValueGeneratedNever();
+                    .HasColumnType("bigint(20)");
 
                 entity.Property(e => e.Image)
                     .IsRequired()
                     .HasColumnName("IMAGE");
 
-                entity.Property(e => e.NoticiaId).HasColumnName("NOTICIA_ID");
+                entity.Property(e => e.NoticiaId)
+                    .HasColumnName("NOTICIA_ID")
+                    .HasColumnType("bigint(20)");
 
                 entity.HasOne(d => d.Noticia)
                     .WithMany(p => p.TaNoticiaImagens)
@@ -138,48 +160,76 @@ namespace SoliSocialWebApi.Models
 
             modelBuilder.Entity<TaParticEvento>(entity =>
             {
-                entity.HasKey(e => new { e.EventId, e.UserId, e.TarefaId });
+                entity.HasKey(e => new { e.EventId, e.UserId, e.TarefaId })
+                    .HasName("PRIMARY");
 
                 entity.ToTable("TA_PARTIC_EVENTO");
 
-                entity.Property(e => e.EventId).HasColumnName("EVENT_ID");
+                entity.HasIndex(e => e.TarefaId)
+                    .HasName("TA_PARTIC_EVENT_TAREF");
 
-                entity.Property(e => e.UserId).HasColumnName("USER_ID");
+                entity.HasIndex(e => e.UserId)
+                    .HasName("TA_PARTIC_EVENT_USER_idx");
 
-                entity.Property(e => e.TarefaId).HasColumnName("TAREFA_ID");
+                entity.Property(e => e.EventId)
+                    .HasColumnName("EVENT_ID")
+                    .HasColumnType("bigint(20)");
 
-                entity.Property(e => e.Staff).HasColumnName("STAFF");
+                entity.Property(e => e.UserId)
+                    .HasColumnName("USER_ID")
+                    .HasColumnType("varchar(64)");
+
+                entity.Property(e => e.TarefaId)
+                    .HasColumnName("TAREFA_ID")
+                    .HasColumnType("bigint(20)");
+
+                entity.Property(e => e.Staff)
+                    .HasColumnName("STAFF")
+                    .HasColumnType("tinyint(1)");
 
                 entity.HasOne(d => d.Event)
                     .WithMany(p => p.TaParticEvento)
                     .HasForeignKey(d => d.EventId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_PARTIC_EVENTO_TD_EVENTO");
+                    .HasConstraintName("TA_PARTIC_EVENT_EVENT");
 
                 entity.HasOne(d => d.Tarefa)
                     .WithMany(p => p.TaParticEvento)
                     .HasForeignKey(d => d.TarefaId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_PARTIC_EVENTO_TD_TAREFA");
+                    .HasConstraintName("TA_PARTIC_EVENT_TAREF");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.TaParticEvento)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_PARTIC_EVENTO_TD_USERS");
+                    .HasConstraintName("TA_PARTIC_EVENT_USER");
             });
 
             modelBuilder.Entity<TaStaffInstituicao>(entity =>
             {
-                entity.HasKey(e => new { e.UserId, e.InstituicaoId, e.DepartamentoId });
+                entity.HasKey(e => new { e.UserId, e.InstituicaoId, e.DepartamentoId })
+                    .HasName("PRIMARY");
 
                 entity.ToTable("TA_STAFF_INSTITUICAO");
 
-                entity.Property(e => e.UserId).HasColumnName("USER_ID");
+                entity.HasIndex(e => e.DepartamentoId)
+                    .HasName("FK_TA_STAFF_INSTITUICAO_TD_DEPARTAMENTO_idx");
 
-                entity.Property(e => e.InstituicaoId).HasColumnName("INSTITUICAO_ID");
+                entity.HasIndex(e => e.InstituicaoId)
+                    .HasName("FK_TA_STAFF_INSTITUICAO_TD_INSTITUICAO_idx");
 
-                entity.Property(e => e.DepartamentoId).HasColumnName("DEPARTAMENTO_ID");
+                entity.Property(e => e.UserId)
+                    .HasColumnName("USER_ID")
+                    .HasColumnType("varchar(64)");
+
+                entity.Property(e => e.InstituicaoId)
+                    .HasColumnName("INSTITUICAO_ID")
+                    .HasColumnType("varchar(64)");
+
+                entity.Property(e => e.DepartamentoId)
+                    .HasColumnName("DEPARTAMENTO_ID")
+                    .HasColumnType("bigint(20)");
 
                 entity.Property(e => e.DataEntrada)
                     .HasColumnName("DATA_ENTRADA")
@@ -206,13 +256,21 @@ namespace SoliSocialWebApi.Models
 
             modelBuilder.Entity<TaTarefaTurno>(entity =>
             {
-                entity.HasKey(e => new { e.TarefaId, e.TurnoId });
+                entity.HasKey(e => new { e.TarefaId, e.TurnoId })
+                    .HasName("PRIMARY");
 
                 entity.ToTable("TA_TAREFA_TURNO");
 
-                entity.Property(e => e.TarefaId).HasColumnName("TAREFA_ID");
+                entity.HasIndex(e => e.TurnoId)
+                    .HasName("FK_TA_TAREFA_TURNO_TD_TURNO");
 
-                entity.Property(e => e.TurnoId).HasColumnName("TURNO_ID");
+                entity.Property(e => e.TarefaId)
+                    .HasColumnName("TAREFA_ID")
+                    .HasColumnType("bigint(20)");
+
+                entity.Property(e => e.TurnoId)
+                    .HasColumnName("TURNO_ID")
+                    .HasColumnType("bigint(20)");
 
                 entity.HasOne(d => d.Tarefa)
                     .WithMany(p => p.TaTarefaTurno)
@@ -229,61 +287,83 @@ namespace SoliSocialWebApi.Models
 
             modelBuilder.Entity<TaUserInstituicaoBlock>(entity =>
             {
-                entity.HasKey(e => new { e.UserId, e.InstituicaoId });
+                entity.HasKey(e => new { e.UserId, e.InstituicaoId })
+                    .HasName("PRIMARY");
 
                 entity.ToTable("TA_USER_INSTITUICAO_BLOCK");
 
-                entity.Property(e => e.UserId).HasColumnName("USER_ID");
+                entity.HasIndex(e => e.InstituicaoId)
+                    .HasName("TA_USER_BLOCK_INST_idx");
 
-                entity.Property(e => e.InstituicaoId).HasColumnName("INSTITUICAO_ID");
+                entity.Property(e => e.UserId)
+                    .HasColumnName("USER_ID")
+                    .HasColumnType("varchar(64)");
+
+                entity.Property(e => e.InstituicaoId)
+                    .HasColumnName("INSTITUICAO_ID")
+                    .HasColumnType("varchar(64)");
 
                 entity.HasOne(d => d.Instituicao)
                     .WithMany(p => p.TaUserInstituicaoBlock)
                     .HasForeignKey(d => d.InstituicaoId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_USER_INSTITUICAO_BLOCK_TD_INSTITUICAO");
+                    .HasConstraintName("TA_USER_BLOCK_INST");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.TaUserInstituicaoBlock)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_USER_INSTITUICAO_BLOCK_TD_USER");
+                    .HasConstraintName("TA_USER_BLOCK_USER");
             });
 
             modelBuilder.Entity<TaUserInstituicaoFav>(entity =>
             {
-                entity.HasKey(e => new { e.UserId, e.InstituicaoId });
+                entity.HasKey(e => new { e.UserId, e.InstituicaoId })
+                    .HasName("PRIMARY");
 
                 entity.ToTable("TA_USER_INSTITUICAO_FAV");
 
-                entity.Property(e => e.UserId).HasColumnName("USER_ID");
+                entity.HasIndex(e => e.InstituicaoId)
+                    .HasName("TA_USER_FAV_INST_idx");
 
-                entity.Property(e => e.InstituicaoId).HasColumnName("INSTITUICAO_ID");
+                entity.Property(e => e.UserId)
+                    .HasColumnName("USER_ID")
+                    .HasColumnType("varchar(64)");
+
+                entity.Property(e => e.InstituicaoId)
+                    .HasColumnName("INSTITUICAO_ID")
+                    .HasColumnType("varchar(64)");
 
                 entity.HasOne(d => d.Instituicao)
                     .WithMany(p => p.TaUserInstituicaoFav)
                     .HasForeignKey(d => d.InstituicaoId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_USER_INSTITUICAO_FAV_TD_INSTITUICAO");
+                    .HasConstraintName("TA_USER_FAV_INST");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.TaUserInstituicaoFav)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_USER_INSTITUICAO_FAV_TD_USER");
+                    .HasConstraintName("TA_USER_FAV_USER");
             });
 
             modelBuilder.Entity<TaUserRoles>(entity =>
             {
                 entity.HasKey(e => new { e.UserId, e.RoleId })
-                    .HasName("PK_UserGroup")
-                    .ForSqlServerIsClustered(false);
+                    .HasName("PRIMARY");
 
                 entity.ToTable("TA_USER_ROLES");
 
-                entity.Property(e => e.UserId).HasColumnName("USER_ID");
+                entity.HasIndex(e => e.RoleId)
+                    .HasName("FK_TA_USER_ROLES_TD_USER_ROLES_idx");
 
-                entity.Property(e => e.RoleId).HasColumnName("ROLE_ID");
+                entity.Property(e => e.UserId)
+                    .HasColumnName("USER_ID")
+                    .HasColumnType("varchar(64)");
+
+                entity.Property(e => e.RoleId)
+                    .HasColumnName("ROLE_ID")
+                    .HasColumnType("varchar(64)");
 
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.TaUserRoles)
@@ -304,42 +384,48 @@ namespace SoliSocialWebApi.Models
 
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .HasMaxLength(36)
-                    .IsUnicode(false)
-                    .ValueGeneratedNever();
+                    .HasColumnType("varchar(36)");
 
                 entity.Property(e => e.Key)
                     .IsRequired()
                     .HasColumnName("KEY")
-                    .IsUnicode(false);
+                    .HasColumnType("longtext");
 
                 entity.Property(e => e.Nome)
                     .IsRequired()
                     .HasColumnName("NOME")
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(50)");
             });
 
             modelBuilder.Entity<TdDepartamentosInstituicao>(entity =>
             {
                 entity.ToTable("TD_DEPARTAMENTOS_INSTITUICAO");
 
-                entity.Property(e => e.Id).HasColumnName("ID");
+                entity.HasIndex(e => e.InstituicaoId)
+                    .HasName("FK_DEPARTAMENTOS_INST_idx");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("ID")
+                    .HasColumnType("bigint(20)");
 
                 entity.Property(e => e.Descricao)
                     .HasColumnName("DESCRICAO")
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(50)");
 
-                entity.Property(e => e.IdPai).HasColumnName("ID_PAI");
+                entity.Property(e => e.IdPai)
+                    .HasColumnName("ID_PAI")
+                    .HasColumnType("bigint(20)");
 
-                entity.Property(e => e.InstituicaoId).HasColumnName("INSTITUICAO_ID");
+                entity.Property(e => e.InstituicaoId)
+                    .IsRequired()
+                    .HasColumnName("INSTITUICAO_ID")
+                    .HasColumnType("varchar(64)");
 
                 entity.HasOne(d => d.Instituicao)
                     .WithMany(p => p.TdDepartamentosInstituicao)
                     .HasForeignKey(d => d.InstituicaoId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TD_DEPARTAMENTOS_INSTITUICAO_TD_INSTITUICAO");
+                    .HasConstraintName("FK_DEPARTAMENTOS_INST");
             });
 
             modelBuilder.Entity<TdDocSupp>(entity =>
@@ -348,7 +434,7 @@ namespace SoliSocialWebApi.Models
 
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .ValueGeneratedNever();
+                    .HasColumnType("bigint(20)");
 
                 entity.Property(e => e.Doc)
                     .IsRequired()
@@ -359,9 +445,19 @@ namespace SoliSocialWebApi.Models
             {
                 entity.ToTable("TD_EVENTO");
 
-                entity.Property(e => e.Id).HasColumnName("ID");
+                entity.HasIndex(e => e.CriadoPor)
+                    .HasName("FK_TD_EVENTO_TD_USER_idx");
 
-                entity.Property(e => e.CriadoPor).HasColumnName("CRIADO_POR");
+                entity.HasIndex(e => e.InstId)
+                    .HasName("FK_TD_EVENTO_TD_INST_idx");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("ID")
+                    .HasColumnType("bigint(20)");
+
+                entity.Property(e => e.CriadoPor)
+                    .HasColumnName("CRIADO_POR")
+                    .HasColumnType("varchar(64)");
 
                 entity.Property(e => e.DataAlteracao)
                     .HasColumnName("DATA_ALTERACAO")
@@ -382,24 +478,29 @@ namespace SoliSocialWebApi.Models
                 entity.Property(e => e.Descricao)
                     .IsRequired()
                     .HasColumnName("DESCRICAO")
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(256)");
 
-                entity.Property(e => e.InstId).HasColumnName("INST_ID");
+                entity.Property(e => e.InstId)
+                    .IsRequired()
+                    .HasColumnName("INST_ID")
+                    .HasColumnType("varchar(64)");
 
                 entity.Property(e => e.Nome)
                     .IsRequired()
                     .HasColumnName("NOME")
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(256)");
 
-                entity.Property(e => e.NumParticipantesMax).HasColumnName("NUM_PARTICIPANTES_MAX");
+                entity.Property(e => e.NumParticipantesMax)
+                    .HasColumnName("NUM_PARTICIPANTES_MAX")
+                    .HasColumnType("int(11)");
 
-                entity.Property(e => e.NumStaffMaximo).HasColumnName("NUM_STAFF_MAXIMO");
+                entity.Property(e => e.NumStaffMaximo)
+                    .HasColumnName("NUM_STAFF_MAXIMO")
+                    .HasColumnType("int(11)");
 
                 entity.Property(e => e.Pagina)
                     .HasColumnName("PAGINA")
-                    .IsUnicode(false);
+                    .HasColumnType("longtext");
 
                 entity.HasOne(d => d.CriadoPorNavigation)
                     .WithMany(p => p.TdEvento)
@@ -410,30 +511,38 @@ namespace SoliSocialWebApi.Models
                     .WithMany(p => p.TdEvento)
                     .HasForeignKey(d => d.InstId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TD_EVENTO_TD_INSTITUICAO");
+                    .HasConstraintName("FK_TD_EVENTO_TD_INST");
             });
 
             modelBuilder.Entity<TdInstituicao>(entity =>
             {
                 entity.ToTable("TD_INSTITUICAO");
 
+                entity.HasIndex(e => e.CriadoPor)
+                    .HasName("FK_TD_INSTITUICAO_TD_USERS_idx");
+
+                entity.HasIndex(e => e.Id)
+                    .HasName("ID_UNIQUE")
+                    .IsUnique();
+
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .HasDefaultValueSql("(newid())");
+                    .HasColumnType("varchar(64)");
 
                 entity.Property(e => e.Acronimo)
                     .IsRequired()
                     .HasColumnName("ACRONIMO")
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(20)");
 
                 entity.Property(e => e.CodigoPostal)
                     .IsRequired()
                     .HasColumnName("CODIGO_POSTAL")
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(50)");
 
-                entity.Property(e => e.CriadoPor).HasColumnName("CRIADO_POR");
+                entity.Property(e => e.CriadoPor)
+                    .IsRequired()
+                    .HasColumnName("CRIADO_POR")
+                    .HasColumnType("varchar(64)");
 
                 entity.Property(e => e.DataAlteracao)
                     .HasColumnName("DATA_ALTERACAO")
@@ -446,50 +555,44 @@ namespace SoliSocialWebApi.Models
                 entity.Property(e => e.Descricao)
                     .IsRequired()
                     .HasColumnName("DESCRICAO")
-                    .IsUnicode(false);
+                    .HasColumnType("longtext");
 
                 entity.Property(e => e.Email)
                     .IsRequired()
                     .HasColumnName("EMAIL")
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(256)");
 
                 entity.Property(e => e.Iban)
                     .HasColumnName("IBAN")
-                    .HasMaxLength(40)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(40)");
 
                 entity.Property(e => e.Logo)
                     .IsRequired()
                     .HasColumnName("LOGO")
-                    .IsUnicode(false);
+                    .HasColumnType("longtext");
 
                 entity.Property(e => e.Morada)
                     .IsRequired()
                     .HasColumnName("MORADA")
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(256)");
 
                 entity.Property(e => e.Nif)
                     .HasColumnName("NIF")
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(20)");
 
                 entity.Property(e => e.Nome)
                     .IsRequired()
                     .HasColumnName("NOME")
-                    .HasMaxLength(500)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(500)");
 
                 entity.Property(e => e.Pagina)
                     .HasColumnName("PAGINA")
-                    .IsUnicode(false);
+                    .HasColumnType("longtext");
 
                 entity.Property(e => e.Phonenumber)
                     .IsRequired()
                     .HasColumnName("PHONENUMBER")
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(20)");
 
                 entity.HasOne(d => d.CriadoPorNavigation)
                     .WithMany(p => p.TdInstituicao)
@@ -502,11 +605,23 @@ namespace SoliSocialWebApi.Models
             {
                 entity.ToTable("TD_NOTICIAS");
 
+                entity.HasIndex(e => e.CriadoPor)
+                    .HasName("FK_TD_NOTICIAS_TD_USER_idx");
+
+                entity.HasIndex(e => e.EventoId)
+                    .HasName("FK_TD_NOTICIAS_TD_EVENTO_idx");
+
+                entity.HasIndex(e => e.InstId)
+                    .HasName("FK_TD_NOTICIAS_TD_INSTITUICAO_idx");
+
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .ValueGeneratedNever();
+                    .HasColumnType("bigint(20)");
 
-                entity.Property(e => e.CriadoPor).HasColumnName("CRIADO_POR");
+                entity.Property(e => e.CriadoPor)
+                    .IsRequired()
+                    .HasColumnName("CRIADO_POR")
+                    .HasColumnType("varchar(64)");
 
                 entity.Property(e => e.DataAlteracao)
                     .HasColumnName("DATA_ALTERACAO")
@@ -519,23 +634,32 @@ namespace SoliSocialWebApi.Models
                 entity.Property(e => e.Descricao)
                     .IsRequired()
                     .HasColumnName("DESCRICAO")
-                    .HasMaxLength(250)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(250)");
 
-                entity.Property(e => e.EventoId).HasColumnName("EVENTO_ID");
+                entity.Property(e => e.EventoId)
+                    .HasColumnName("EVENTO_ID")
+                    .HasColumnType("bigint(20)");
 
-                entity.Property(e => e.InstId).HasColumnName("INST_ID");
+                entity.Property(e => e.InstId)
+                    .IsRequired()
+                    .HasColumnName("INST_ID")
+                    .HasColumnType("varchar(64)");
 
                 entity.Property(e => e.Nome)
                     .IsRequired()
                     .HasColumnName("NOME")
-                    .HasMaxLength(250)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(250)");
 
                 entity.Property(e => e.Pagina)
                     .IsRequired()
                     .HasColumnName("PAGINA")
-                    .IsUnicode(false);
+                    .HasColumnType("longtext");
+
+                entity.HasOne(d => d.CriadoPorNavigation)
+                    .WithMany(p => p.TdNoticias)
+                    .HasForeignKey(d => d.CriadoPor)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_TD_NOTICIAS_TD_USER");
 
                 entity.HasOne(d => d.Evento)
                     .WithMany(p => p.TdNoticias)
@@ -553,23 +677,34 @@ namespace SoliSocialWebApi.Models
             {
                 entity.ToTable("TD_TAREFAS");
 
-                entity.Property(e => e.Id).HasColumnName("ID");
+                entity.HasIndex(e => e.InstituicaoId)
+                    .HasName("FK_TD_TAREFAS_TD_INST_idx");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("ID")
+                    .HasColumnType("bigint(20)");
 
                 entity.Property(e => e.Descricao)
                     .IsRequired()
                     .HasColumnName("DESCRICAO")
-                    .IsUnicode(false);
+                    .HasColumnType("longtext");
 
-                entity.Property(e => e.InstituicaoId).HasColumnName("INSTITUICAO_ID");
+                entity.Property(e => e.InstituicaoId)
+                    .HasColumnName("INSTITUICAO_ID")
+                    .HasColumnType("varchar(64)");
 
-                entity.Property(e => e.NumParticMax).HasColumnName("NUM_PARTIC_MAX");
+                entity.Property(e => e.NumParticMax)
+                    .HasColumnName("NUM_PARTIC_MAX")
+                    .HasColumnType("int(11)");
 
-                entity.Property(e => e.Turnos).HasColumnName("TURNOS");
+                entity.Property(e => e.Turnos)
+                    .HasColumnName("TURNOS")
+                    .HasColumnType("tinyint(1)");
 
                 entity.HasOne(d => d.Instituicao)
                     .WithMany(p => p.TdTarefas)
                     .HasForeignKey(d => d.InstituicaoId)
-                    .HasConstraintName("FK_TD_TAREFAS_TD_INSTITUICAO");
+                    .HasConstraintName("FK_TD_TAREFAS_TD_INST");
             });
 
             modelBuilder.Entity<TdTemplates>(entity =>
@@ -578,7 +713,7 @@ namespace SoliSocialWebApi.Models
 
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .ValueGeneratedNever();
+                    .HasColumnType("bigint(20)");
 
                 entity.Property(e => e.DataAlteracao)
                     .HasColumnName("DATA_ALTERACAO")
@@ -588,14 +723,18 @@ namespace SoliSocialWebApi.Models
                     .HasColumnName("DATA_CRIACAO")
                     .HasColumnType("datetime");
 
-                entity.Property(e => e.Evento).HasColumnName("EVENTO");
+                entity.Property(e => e.Evento)
+                    .HasColumnName("EVENTO")
+                    .HasColumnType("tinyint(1)");
 
-                entity.Property(e => e.Noticia).HasColumnName("NOTICIA");
+                entity.Property(e => e.Noticia)
+                    .HasColumnName("NOTICIA")
+                    .HasColumnType("tinyint(1)");
 
                 entity.Property(e => e.Pagina)
                     .IsRequired()
                     .HasColumnName("PAGINA")
-                    .IsUnicode(false);
+                    .HasColumnType("longtext");
             });
 
             modelBuilder.Entity<TdTurno>(entity =>
@@ -604,7 +743,7 @@ namespace SoliSocialWebApi.Models
 
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .ValueGeneratedNever();
+                    .HasColumnType("bigint(20)");
 
                 entity.Property(e => e.HoraFinal)
                     .HasColumnName("HORA_FINAL")
@@ -619,44 +758,54 @@ namespace SoliSocialWebApi.Models
             {
                 entity.ToTable("TD_USER_ROLES");
 
+                entity.HasIndex(e => e.Id)
+                    .HasName("ID")
+                    .IsUnique();
+
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .HasDefaultValueSql("(newid())");
+                    .HasColumnType("varchar(64)");
 
                 entity.Property(e => e.ConcurrencyStamp)
                     .IsRequired()
-                    .HasColumnName("CONCURRENCY_STAMP");
+                    .HasColumnName("CONCURRENCY_STAMP")
+                    .HasColumnType("longtext");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasColumnName("NAME")
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(256)");
 
                 entity.Property(e => e.NormalizedName)
                     .IsRequired()
                     .HasColumnName("NORMALIZED_NAME")
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(256)");
             });
 
             modelBuilder.Entity<TdUsers>(entity =>
             {
                 entity.ToTable("TD_USERS");
 
+                entity.HasIndex(e => e.Id)
+                    .HasName("ID")
+                    .IsUnique();
+
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .HasDefaultValueSql("(newid())");
+                    .HasColumnType("varchar(64)");
 
-                entity.Property(e => e.Age).HasColumnName("AGE");
+                entity.Property(e => e.Age)
+                    .HasColumnName("AGE")
+                    .HasColumnType("int(11)");
 
                 entity.Property(e => e.Bio)
                     .HasColumnName("BIO")
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(500)");
 
                 entity.Property(e => e.ConcurrencyStamp)
                     .IsRequired()
-                    .HasColumnName("CONCURRENCY_STAMP");
+                    .HasColumnName("CONCURRENCY_STAMP")
+                    .HasColumnType("longtext");
 
                 entity.Property(e => e.DataAlteracao)
                     .HasColumnName("DATA_ALTERACAO")
@@ -673,49 +822,48 @@ namespace SoliSocialWebApi.Models
                 entity.Property(e => e.Email)
                     .IsRequired()
                     .HasColumnName("EMAIL")
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(256)");
 
-                entity.Property(e => e.EmailConfirmed).HasColumnName("EMAIL_CONFIRMED");
+                entity.Property(e => e.EmailConfirmed)
+                    .HasColumnName("EMAIL_CONFIRMED")
+                    .HasColumnType("tinyint(1)");
 
                 entity.Property(e => e.Genero)
                     .IsRequired()
                     .HasColumnName("GENERO")
-                    .HasMaxLength(12)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(12)");
 
                 entity.Property(e => e.Imagem)
                     .HasColumnName("IMAGEM")
-                    .IsUnicode(false);
+                    .HasColumnType("longtext");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasColumnName("NAME")
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(256)");
 
                 entity.Property(e => e.NormalizedName)
                     .IsRequired()
                     .HasColumnName("NORMALIZED_NAME")
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(256)");
 
                 entity.Property(e => e.PasswordHash)
                     .IsRequired()
-                    .HasColumnName("PASSWORD_HASH");
+                    .HasColumnName("PASSWORD_HASH")
+                    .HasColumnType("longtext");
 
                 entity.Property(e => e.Phonenumber)
                     .HasColumnName("PHONENUMBER")
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(20)");
 
-                entity.Property(e => e.PhonenumberConfirmed).HasColumnName("PHONENUMBER_CONFIRMED");
+                entity.Property(e => e.PhonenumberConfirmed)
+                    .HasColumnName("PHONENUMBER_CONFIRMED")
+                    .HasColumnType("tinyint(1)");
 
                 entity.Property(e => e.Username)
                     .IsRequired()
                     .HasColumnName("USERNAME")
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
+                    .HasColumnType("varchar(256)");
             });
         }
     }

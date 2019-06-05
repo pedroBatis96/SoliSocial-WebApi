@@ -8,9 +8,9 @@ namespace SoliSocialWebApi.ViewModels.UserManagement
 {
     public class UserInfoSent
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Email { get; set; }
-        public bool EmailConfirmed { get; set; }
+        public sbyte EmailConfirmed { get; set; }
         public string Name { get; set; }
         public string Username { get; set; }
         public string Bio { get; set; }
@@ -18,12 +18,12 @@ namespace SoliSocialWebApi.ViewModels.UserManagement
         public string Genero { get; set; }
         public string Imagem { get; set; }
         public string Phonenumber { get; set; }
-        public bool PhonenumberConfirmed { get; set; }
+        public sbyte PhonenumberConfirmed { get; set; }
         public List<tdInsituicaoInfo> InstituicaoList { get; set; }
 
         public class tdInsituicaoInfo
         {
-            public Guid Id { get; set; }
+            public string Id { get; set; }
             public string Acronimo { get; set; }
             public string Logo { get; set; }
         }
