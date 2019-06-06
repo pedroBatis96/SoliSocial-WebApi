@@ -36,18 +36,22 @@ namespace SoliSocialWebApi
                 builder =>
                 {
                     builder
-                        .AllowAnyOrigin()
+                        .WithOrigins("https://solisocial.pcdev.pt","http://localhost:3000")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
                     
                 });
             });
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            
             services.AddDbContext<SoliSocialDbContext>(options =>
                 options.UseMySql(Configuration.GetConnectionString("SoliSocialDb"))
             );
+            services.AddScoped<AuthorizeApp>();
+            services.AddMvc(options =>
+            {
+                options.Filters.Add<AuthorizeApp>();
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddAuthentication(auth =>
             {

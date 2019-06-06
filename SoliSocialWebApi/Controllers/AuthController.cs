@@ -1,10 +1,9 @@
-﻿using System;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SoliSocialWebApi.Models;
-using SoliSocialWebApi.Services;
 using SoliSocialWebApi.Services.Abstraction;
 using SoliSocialWebApi.ViewModels;
+using System;
+using System.Linq;
 
 namespace SoliSocialWebApi.Controllers
 {
@@ -27,41 +26,21 @@ namespace SoliSocialWebApi.Controllers
         [Route("Login")]
         public ActionResult<AuthData> Post([FromBody] LoginModel login)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = ModelState }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            var user = context.TdUsers.FirstOrDefault(t => t.Email == login.Email);
+            TdUsers user = context.TdUsers.FirstOrDefault(t => t.Email == login.Email);
 
             if (user == null)
             {
                 return (BadRequest(new { err = "Utilizador não existe, por favor registe-se" }));
             }
 
-            var passwordValid = service.VerifyPassword(login.Password, user.PasswordHash);
-
-            if (!passwordValid)
+            if (!service.VerifyPassword(login.Password, user.PasswordHash))
             {
                 return (BadRequest(new { err = "Password errada" }));
             }
 
-            var authData = service.GetAuthData(user.Id.ToString());
+            AuthData authData = service.GetAuthData(user.Id.ToString());
             authData.Email = user.Email;
             authData.Username = user.Username;
-
             return authData;
         }
 
@@ -69,23 +48,6 @@ namespace SoliSocialWebApi.Controllers
         [Route("Registo")]
         public ActionResult<AuthData> Post([FromBody] RegistoModel registo)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = ModelState }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
             if (context.TdUsers.FirstOrDefault(t => t.Email == registo.Email) != null)
             {
                 return (BadRequest(new { err = "Conta com esse endereço de email já existe" }));
@@ -117,7 +79,7 @@ namespace SoliSocialWebApi.Controllers
             return authData;
         }
 
-        
+
         public static string RandomString(int length)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -129,10 +91,8 @@ namespace SoliSocialWebApi.Controllers
         private int CalcAge(DateTime BirthDate)
         {
             int age = DateTime.Now.Year - BirthDate.Year;
-
             if ((BirthDate.Month > DateTime.Now.Month) || (BirthDate.Month == DateTime.Now.Month && BirthDate.Day > DateTime.Now.Day))
                 age--;
-
             return age;
         }
 

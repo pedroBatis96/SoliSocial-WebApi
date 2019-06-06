@@ -30,26 +30,29 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("dados")]
         public ActionResult<string> Post([FromBody]InstitutionGet model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
             TdUsers user = context.TdUsers.FirstOrDefault(t => t.Id.ToString() == User.Claims.First().Value);
-            TdInstituicao instituicao = context.TdInstituicao.FirstOrDefault(t => t.Id == model.Id);
-            var departamentos = context.TdDepartamentosInstituicao.Where(t => t.InstituicaoId == model.Id).Select(t => new { t.Id, t.Descricao}).ToList();
-            instituicao.CriadoPorNavigation = null;
+            if (user == null)
+            {
+                return BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" });
+            }
+            var instituicao = context.TdInstituicao.Select(t => new
+            {
+                t.Id,
+                t.Logo,
+                t.Iban,
+                t.Nif,
+                t.Morada,
+                t.Pagina,
+                t.Phonenumber,
+                t.Email,
+                t.Descricao,
+                t.Acronimo,
+                t.CodigoPostal,
+                t.DataCriacao,
+                t.Nome
+            }
+            ).FirstOrDefault(t => t.Id == model.Id);
+            var departamentos = context.TdDepartamentosInstituicao.Where(t => t.InstituicaoId == model.Id).Select(t => new { t.Id, t.Descricao }).ToList();
 
             try
             {
@@ -65,23 +68,10 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("register")]
         public ActionResult<bool> Post([FromBody]InstitutionRegister model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
             if (!ModelState.IsValid)
             {
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
 
             if (context.TdInstituicao.FirstOrDefault(t => t.Nome == model.Name || t.Acronimo == model.Acronimo) != null)
             {
@@ -165,19 +155,7 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("updatedesc")]
         public ActionResult<bool> Post([FromBody]InstitutionDescUpdate model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
             if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
             {
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
@@ -221,19 +199,7 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("updatefisc")]
         public ActionResult<bool> Post([FromBody]InstitutionFiscUpdate model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
             if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
             {
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
@@ -269,19 +235,7 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("updatecon")]
         public ActionResult<bool> Post([FromBody]InstitutionConUpdate model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
             if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
             {
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
@@ -328,19 +282,7 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("updatelog")]
         public ActionResult<bool> Post([FromBody]InstitutionLogUpdate model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
             if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
             {
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }

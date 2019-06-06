@@ -1,13 +1,11 @@
-﻿using System;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SoliSocialWebApi.Models;
-using SoliSocialWebApi.Services;
 using SoliSocialWebApi.Services.Abstraction;
-using SoliSocialWebApi.ViewModels;
 using SoliSocialWebApi.ViewModels.InstitutionManagement;
+using System;
+using System.Linq;
 
 namespace SoliSocialWebApi.Controllers.Institution
 {
@@ -27,48 +25,14 @@ namespace SoliSocialWebApi.Controllers.Institution
         [HttpGet("instList")]
         public ActionResult<string> Get()
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "GET"))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            TdUsers user = context.TdUsers.Include(t => t.TdInstituicao).Include(t => t.TaStaffInstituicao).FirstOrDefault(t => t.Id.ToString() == User.Claims.First().Value);
-            var institutionList = context.TdInstituicao.OrderBy(t=>t.DataCriacao).Select(t => new { t.Id, t.Nome, t.Logo });
+            string userId = context.TdUsers.FirstOrDefault(t => t.Id.ToString() == User.Claims.First().Value).Id;
+            var institutionList = context.TdInstituicao.Where(t => t.TaUserInstituicaoBlock.All(y => y.UserId != userId)).OrderBy(t => t.DataCriacao).Select(t => new { t.Id, t.Nome, t.Logo });
             return JsonConvert.SerializeObject(institutionList);
         }
 
         [HttpPost("getById")]
         public ActionResult<string> Post([FromBody]InstitutionMain model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
             try
             {
 
@@ -80,9 +44,10 @@ namespace SoliSocialWebApi.Controllers.Institution
                                   .Include(n => n.TdNoticias)
                                   .Include(e => e.TdEvento)
                                   .Include(f => f.TaUserInstituicaoFav)
+                                  .Select(t=> new {t.Id, t.Nome,t.Logo,t.TaStaffInstituicao,t.TdNoticias,t.TdEvento,t.TaUserInstituicaoFav,t.Descricao,t.Email,t.Phonenumber,t.CodigoPostal,t.Morada,t.Pagina})
                                   .FirstOrDefault(t => t.Id == model.InstId.ToString());
 
-                if (instituicao.TaUserInstituicaoFav.FirstOrDefault(t=>t.UserId==userId && t.InstituicaoId == model.InstId) != null)
+                if (instituicao.TaUserInstituicaoFav.FirstOrDefault(t => t.UserId == userId && t.InstituicaoId == model.InstId) != null)
                 {
                     favorited = true;
                 }
@@ -97,7 +62,6 @@ namespace SoliSocialWebApi.Controllers.Institution
                     fav.Instituicao = null;
                 }
 
-
                 return JsonConvert.SerializeObject(new { instituicao, favorited });
             }
             catch (Exception ex)
@@ -109,30 +73,13 @@ namespace SoliSocialWebApi.Controllers.Institution
         [HttpPost("handleFavorite")]
         public ActionResult<bool> HandleFavorite([FromBody]InstitutionMain model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
             try
             {
                 string userId = User.Claims.First().Value;
 
                 var favorited = context.TaUserInstituicaoFav.FirstOrDefault(t => t.UserId.ToString() == userId && t.InstituicaoId == model.InstId.ToString());
 
-                if(favorited != null)
+                if (favorited != null)
                 {
                     context.TaUserInstituicaoFav.Remove(favorited);
                     context.SaveChanges();
@@ -156,26 +103,61 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
         }
 
+        [HttpPost("removeInstFavorite")]
+        public ActionResult<bool> HandleRemoveFavorite([FromBody]InstitutionMain model)
+        {
+            try
+            {
+                string userId = User.Claims.First().Value;
+
+                var favorited = context.TaUserInstituicaoFav.FirstOrDefault(t => t.UserId.ToString() == userId && t.InstituicaoId == model.InstId.ToString());
+
+                if (favorited != null)
+                {
+                    context.TaUserInstituicaoFav.Remove(favorited);
+                    context.SaveChanges();
+                    return true;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
+            }
+        }
+
+        [HttpPost("removeInstBan")]
+        public ActionResult<bool> HandleRemoveBan([FromBody]InstitutionMain model)
+        {
+            try
+            {
+                string userId = User.Claims.First().Value;
+
+                var blocked = context.TaUserInstituicaoBlock.FirstOrDefault(t => t.UserId.ToString() == userId && t.InstituicaoId == model.InstId.ToString());
+
+                if (blocked != null)
+                {
+                    context.TaUserInstituicaoBlock.Remove(blocked);
+                    context.SaveChanges();
+                    return true;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
+            }
+        }
+
         [HttpPost("getAllMembers")]
         public ActionResult<string> getAllMembers([FromBody]InstitutionMain model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
             try
             {
                 string userId = User.Claims.First().Value;
@@ -184,11 +166,11 @@ namespace SoliSocialWebApi.Controllers.Institution
                                   .Include(d => d.Departamento)
                                   .Where(ta => ta.InstituicaoId == model.InstId)
                                   .Select(t => new { t.User.Id, t.User.Username, t.User.Imagem, t.Departamento.Descricao })
-                                  .OrderBy(t=>t.Username);
+                                  .OrderBy(t => t.Username);
 
-                var departamentos = context.TdDepartamentosInstituicao.Where(t => t.InstituicaoId == model.InstId).Select(t=>new { t.Descricao, t.Id });
+                var departamentos = context.TdDepartamentosInstituicao.Where(t => t.InstituicaoId == model.InstId).Select(t => new { t.Descricao, t.Id });
 
-                return JsonConvert.SerializeObject(new { membros,departamentos });
+                return JsonConvert.SerializeObject(new { membros, departamentos });
             }
             catch (Exception ex)
             {

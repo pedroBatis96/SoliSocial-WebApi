@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json.Linq;
 using SoliSocialWebApi.Models;
 using SoliSocialWebApi.ViewModels;
@@ -9,25 +11,51 @@ using System.Text;
 
 namespace SoliSocialWebApi.Services
 {
-    public class HMACAuthorization
+    public class AuthorizeApp : ActionFilterAttribute
     {
-        private SoliSocialDbContext _context;
-        public HMACAuthorization(SoliSocialDbContext context)
+        private SoliSocialDbContext dbContext;
+        public AuthorizeApp(SoliSocialDbContext dbContext)
         {
-            _context = context;
+            this.dbContext = dbContext;
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            base.OnActionExecuting(context);
+
+            Console.WriteLine("context:  " + context);
+
+            ApiAuthHeader apiAuthHeader = GetApiAuthHeader(context.HttpContext);
+            if (apiAuthHeader == null)
+            {
+                context.Result = new BadRequestObjectResult(new { err = "Ocorreu um erro, por favor tente novamente mais tarde" });
+                return;
+            }
+
+            //Chalenge the API Header
+            bool validApp;
+            if (context.HttpContext.Request.Method == "POST")
+                validApp = Chalenge(apiAuthHeader, context.HttpContext.Request.Method, ReadBody(context.HttpContext));
+            else
+                validApp = Chalenge(apiAuthHeader, context.HttpContext.Request.Method);
+            if (!validApp)
+            {
+                context.Result = new BadRequestObjectResult(new { err = "Ocorreu um erro, por favor tente novamente mais tarde" });
+                return;
+            }
         }
 
         public bool Chalenge(ApiAuthHeader authHeader, string method, string body = "")
         {
 
-            var appData = _context.TdApiClient.FirstOrDefault(ac => ac.Id == authHeader.AppId);
+            var appData = dbContext.TdApiClient.FirstOrDefault(ac => ac.Id == authHeader.AppId);
 
             if (appData == null)
                 return false;
 
             string key = appData.Key;
 
-            //string stripedBody = body.Replace("\\", "");
+
             byte[] content = Encoding.UTF8.GetBytes(body);
             MD5 md5 = MD5.Create();
             byte[] requestContentHash = md5.ComputeHash(content);
@@ -36,14 +64,14 @@ namespace SoliSocialWebApi.Services
             if (body == "")
                 calcSignature = authHeader.AppId + method + authHeader.Timestamp + authHeader.Nonce;
             else
-                calcSignature = authHeader.AppId + method + authHeader.Timestamp + authHeader.Nonce + ByteArrayToString(requestContentHash);
+                calcSignature = authHeader.AppId + method + authHeader.Timestamp + authHeader.Nonce + requestContentHash.BAToString();
             byte[] calcSignatureBa = Encoding.UTF8.GetBytes(calcSignature);
             byte[] secretKeyByteArray = Encoding.UTF8.GetBytes(key);
 
             using (HMACSHA256 hmac = new HMACSHA256(secretKeyByteArray))
             {
                 byte[] signatureBytes = hmac.ComputeHash(calcSignatureBa);
-                string signatureHex = ByteArrayToString(signatureBytes);
+                string signatureHex = signatureBytes.BAToString();
 
                 if (signatureHex == authHeader.Signature)
                     return true;
@@ -51,7 +79,7 @@ namespace SoliSocialWebApi.Services
             }
         }
 
-        public static string ReadBody(HttpContext httpContext)
+        private string ReadBody(HttpContext httpContext)
         {
             byte[] body = new byte[httpContext.Request.Body.Length];
             int bodyLength = int.Parse(httpContext.Request.Body.Length.ToString());
@@ -62,17 +90,20 @@ namespace SoliSocialWebApi.Services
             return Encoding.UTF8.GetString(body);
         }
 
-        public static ApiAuthHeader GetApiAuthHeader(HttpContext httpContext)
+        private ApiAuthHeader GetApiAuthHeader(HttpContext httpContext)
         {
             //START Grab API Auth Header
             var req = httpContext.Request;
+            foreach(var x in req.Headers)
+            {
+                Console.WriteLine(x);
+            }
 
-            var apiAuthHeaderStr = req.Headers.FirstOrDefault(h => h.Key == "api_auth").Value.FirstOrDefault();
+            var apiAuthHeaderStr = req.Headers.FirstOrDefault(h => h.Key == "appauthentication").Value.FirstOrDefault();
+            Console.WriteLine("apiAuthHeaderStr:  " + apiAuthHeaderStr);
 
             if (apiAuthHeaderStr == null)
                 return null;
-
-            apiAuthHeaderStr = apiAuthHeaderStr.Replace("\\", "");
 
             dynamic api_auth = JObject.Parse(apiAuthHeaderStr);
 
@@ -85,8 +116,11 @@ namespace SoliSocialWebApi.Services
             };
             //END Grab API Auth Header
         }
+    }
 
-        private static string ByteArrayToString(byte[] ba)
+    public static class ByteArrayExtensions
+    {
+        public static string BAToString(this byte[] ba)
         {
             return BitConverter.ToString(ba).Replace("-", "").ToLower();
         }

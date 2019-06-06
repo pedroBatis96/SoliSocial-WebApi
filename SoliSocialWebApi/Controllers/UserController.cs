@@ -3,12 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SoliSocialWebApi.Models;
-using SoliSocialWebApi.Services;
 using SoliSocialWebApi.Services.Abstraction;
-using SoliSocialWebApi.ViewModels;
 using SoliSocialWebApi.ViewModels.UserManagement;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace SoliSocialWebApi.Controllers
@@ -18,9 +15,8 @@ namespace SoliSocialWebApi.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-
-        IAuthService service;
-        SoliSocialDbContext context;
+        private readonly IAuthService service;
+        readonly SoliSocialDbContext context;
 
         public UserController(IAuthService authService, SoliSocialDbContext context)
         {
@@ -35,26 +31,33 @@ namespace SoliSocialWebApi.Controllers
         [HttpGet("me")]
         public ActionResult<string> Get()
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
+            var user = context.TdUsers.Include(t => t.TaStaffInstituicao)
+                                       .Select(t => new
+                                       {
+                                           t.Id,
+                                           t.DateOfBirth,
+                                           t.Email,
+                                           t.EmailConfirmed,
+                                           t.Genero,
+                                           t.Imagem,
+                                           t.Name,
+                                           t.Bio,
+                                           t.Phonenumber,
+                                           t.PhonenumberConfirmed,
+                                           t.Username,
+                                           InstituicaoList = t.TaStaffInstituicao.Where(y => y.UserId == t.Id).Select(y => new { y.Instituicao.Acronimo, y.Instituicao.Id, y.Instituicao.Logo })
+                                       })
+                                       .FirstOrDefault(t => t.Id == User.Claims.First().Value);
+            return JsonConvert.SerializeObject(user);
+        }
 
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "GET"))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            var user = context.TdUsers.Include(t => t.TdInstituicao).Include(t => t.TaStaffInstituicao).FirstOrDefault(t => t.Id.ToString() == User.Claims.First().Value);
-            var result = mapToUser(user);
-            return Newtonsoft.Json.JsonConvert.SerializeObject(result);
+        [HttpGet("userFavBlock")]
+        public ActionResult<string> GetFavBlock()
+        {
+            string userId = User.Claims.First().Value;
+            var favorites = context.TdInstituicao.Where(y => y.TaUserInstituicaoFav.Any(fav => fav.UserId == userId)).Select(y=>new { y.Id, y.Logo, y.Nome });
+            var block = context.TdInstituicao.Where(y => y.TaUserInstituicaoBlock.Any(fav => fav.UserId == userId)).Select(y => new { y.Id, y.Logo, y.Nome });
+            return JsonConvert.SerializeObject(new { favorites,block });
         }
 
         /// <summary>
@@ -65,25 +68,7 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("userId")]
         public ActionResult<string> GetUserById([FromBody]GetUserInfo model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            TdUsers user = context.TdUsers.FirstOrDefault(t => t.Id == model.UserId);
-
+            var user = context.TdUsers.Select(t => new { t.Imagem, t.Bio, t.Username, t.Id, t.Genero, t.Age, t.Email, t.Phonenumber }).FirstOrDefault(t => t.Id == model.UserId);
             return JsonConvert.SerializeObject(user);
         }
 
@@ -95,33 +80,16 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("updateinfo")]
         public ActionResult<bool> Post([FromBody] UserInfoUpdate model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
             var user = context.TdUsers.FirstOrDefault(t => t.Id.ToString() == User.Claims.First().Value);
 
-            var passwordValid = service.VerifyPassword(model.Password, user.PasswordHash);
-            if (!passwordValid)
+            if (!service.VerifyPassword(model.Password, user.PasswordHash))
             {
                 return (BadRequest(new { err = "Password errada" }));
             }
 
             if (!string.IsNullOrWhiteSpace(model.Email))
             {
-                if(context.TdUsers.FirstOrDefault(t => t.Email == model.Email) != null)
+                if (context.TdUsers.FirstOrDefault(t => t.Email == model.Email) != null)
                 {
                     return (BadRequest(new { err = "Já existe um utilizador com esse email" }));
                 }
@@ -154,24 +122,9 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("updatepass")]
         public ActionResult<bool> Post([FromBody]UserPassUpdate model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
             var user = context.TdUsers.FirstOrDefault(t => t.Id.ToString() == User.Claims.First().Value);
 
-            var passwordValid = service.VerifyPassword(model.PasswordOld, user.PasswordHash);
-            if (!passwordValid)
+            if (!service.VerifyPassword(model.PasswordOld, user.PasswordHash))
             {
                 return (BadRequest(new { err = "Password errada" }));
             }
@@ -188,24 +141,9 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("updateimage")]
         public ActionResult<bool> Post([FromBody]UserImageUpdate model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
             var user = context.TdUsers.FirstOrDefault(t => t.Id.ToString() == User.Claims.First().Value);
 
-            var passwordValid = service.VerifyPassword(model.Password, user.PasswordHash);
-            if (!passwordValid)
+            if (!service.VerifyPassword(model.Password, user.PasswordHash))
             {
                 return (BadRequest(new { err = "Password errada" }));
             }
@@ -219,67 +157,49 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("userInstitution")]
         public ActionResult<string> Post([FromBody]GetUserInfo model)
         {
-            ApiAuthHeader header = HMACAuthorization.GetApiAuthHeader(HttpContext);
-            if (header == null)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-            HMACAuthorization apiAuth = new HMACAuthorization(context);
-            if (!apiAuth.Chalenge(header, "POST", HMACAuthorization.ReadBody(HttpContext)))
-            {
-                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
-            }
-
-
-            var pertence = context.TaStaffInstituicao.Where(t => t.UserId == model.UserId).Select(t => new {instId = t.InstituicaoId,t.Departamento.Id, t.Departamento.Descricao,t.Instituicao.Logo,t.Instituicao.Acronimo });
+            var pertence = context.TaStaffInstituicao.Where(t => t.UserId == model.UserId).Select(t => new { instId = t.InstituicaoId, t.Departamento.Id, t.Departamento.Descricao, t.Instituicao.Logo, t.Instituicao.Acronimo });
             pertence = pertence.OrderBy(t => t.Acronimo);
 
             var favoritos = context.TaUserInstituicaoFav.Where(t => t.UserId == model.UserId).Select(t => new { t.Instituicao.Id, t.Instituicao.Logo, t.Instituicao.Acronimo });
             favoritos = favoritos.OrderBy(t => t.Acronimo);
 
-            return JsonConvert.SerializeObject(new { pertence,favoritos});
+            return JsonConvert.SerializeObject(new { pertence, favoritos });
         }
 
-        private UserInfoSent mapToUser(TdUsers user)
-        {
-            var result = new UserInfoSent
-            {
-                Id = user.Id,
-                DateOfBirth = user.DateOfBirth,
-                Email = user.Email,
-                EmailConfirmed = user.EmailConfirmed,
-                Genero = user.Genero,
-                Imagem = user.Imagem,
-                Name = user.Name,
-                Bio = user.Bio,
-                Phonenumber = user.Phonenumber,
-                PhonenumberConfirmed = user.PhonenumberConfirmed,
-                Username = user.Username,
-            };
-            result.InstituicaoList = new List<UserInfoSent.tdInsituicaoInfo>();
-            foreach (var instituicao in user.TaStaffInstituicao)
-            {
-                var inst = context.TdInstituicao.Where(t => t.Id == instituicao.InstituicaoId).FirstOrDefault();
-                result.InstituicaoList.Add(new UserInfoSent.tdInsituicaoInfo
-                {
-                    Acronimo = inst.Acronimo,
-                    Id = inst.Id,
-                    Logo = inst.Logo
-                });
-            }
+        //private UserInfoSent mapToUser(TdUsers user)
+        //{
+        //    var result = new UserInfoSent
+        //    {
+        //        Id = user.Id,
+        //        DateOfBirth = user.DateOfBirth,
+        //        Email = user.Email,
+        //        EmailConfirmed = user.EmailConfirmed,
+        //        Genero = user.Genero,
+        //        Imagem = user.Imagem,
+        //        Name = user.Name,
+        //        Bio = user.Bio,
+        //        Phonenumber = user.Phonenumber,
+        //        PhonenumberConfirmed = user.PhonenumberConfirmed,
+        //        Username = user.Username,
+        //    };
+        //    result.InstituicaoList = new List<UserInfoSent.tdInsituicaoInfo>();
+        //    foreach (var instituicao in user.TaStaffInstituicao)
+        //    {
+        //        var inst = context.TdInstituicao.Where(t => t.Id == instituicao.InstituicaoId).FirstOrDefault();
+        //        result.InstituicaoList.Add(new UserInfoSent.tdInsituicaoInfo
+        //        {
+        //            Acronimo = inst.Acronimo,
+        //            Id = inst.Id,
+        //            Logo = inst.Logo
+        //        });
+        //    }
 
-            return result;
-        }
+        //    return result;
+        //}
     }
 
 
-    
+
 
 
 }
