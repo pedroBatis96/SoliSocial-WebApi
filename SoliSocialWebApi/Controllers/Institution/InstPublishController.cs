@@ -71,8 +71,8 @@ namespace SoliSocialWebApi.Controllers.Institution
             {
                 string userId = context.TdUsers.FirstOrDefault(t => t.Id.ToString() == User.Claims.First().Value).Id;
                 var result = context.TdNoticias.Where(t => model.NewsId == t.Id).Select(
-                    t=>new { inst = new { t.Inst.Logo, t.Inst.Nome, t.Inst.Id },
-                        t.Nome,t.Resumo,t.Corpo,t.TaNoticiaImagens,t.Banner
+                    t=>new { inst = new { t.Inst.Logo,t.Inst.Acronimo, t.Inst.Nome, t.Inst.Id },
+                        t.Nome,t.Resumo,t.Corpo,t.TaNoticiaImagens,t.Banner,t.DataCriacao,t.DataAlteracao
                     }
                 ).FirstOrDefault();
                 return JsonConvert.SerializeObject(result);
