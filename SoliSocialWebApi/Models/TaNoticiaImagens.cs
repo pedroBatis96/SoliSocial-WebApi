@@ -7,7 +7,8 @@ namespace SoliSocialWebApi.Models
     {
         public long Id { get; set; }
         public long NoticiaId { get; set; }
-        public byte[] Image { get; set; }
+        public string Image { get; set; }
+        public string Descricao { get; set; }
 
         public virtual TdNoticias Noticia { get; set; }
     }

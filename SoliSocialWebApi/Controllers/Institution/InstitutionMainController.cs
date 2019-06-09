@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SoliSocialWebApi.Models;
 using SoliSocialWebApi.Services.Abstraction;
 using SoliSocialWebApi.ViewModels.InstitutionManagement;
+using SoliSocialWebApi.ViewModels.News;
 using System;
 using System.Linq;
 
@@ -11,6 +13,7 @@ namespace SoliSocialWebApi.Controllers.Institution
 {
     [Route("api/institution/[controller]")]
     [ApiController]
+    [Authorize]
     public class InstitutionMainController : ControllerBase
     {
         readonly IAuthService service;
@@ -69,6 +72,7 @@ namespace SoliSocialWebApi.Controllers.Institution
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
+
 
         [HttpPost("handleFavorite")]
         public ActionResult<bool> HandleFavorite([FromBody]InstitutionMain model)

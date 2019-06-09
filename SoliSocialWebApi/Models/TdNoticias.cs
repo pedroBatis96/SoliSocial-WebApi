@@ -13,8 +13,9 @@ namespace SoliSocialWebApi.Models
         public long Id { get; set; }
         public string InstId { get; set; }
         public string Nome { get; set; }
-        public string Descricao { get; set; }
-        public string Pagina { get; set; }
+        public string Corpo { get; set; }
+        public string Resumo { get; set; }
+        public string Banner { get; set; }
         public DateTime DataCriacao { get; set; }
         public DateTime? DataAlteracao { get; set; }
         public string CriadoPor { get; set; }

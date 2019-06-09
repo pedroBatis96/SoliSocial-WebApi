@@ -137,15 +137,18 @@ namespace SoliSocialWebApi.Models
                 entity.ToTable("TA_NOTICIA_IMAGENS");
 
                 entity.HasIndex(e => e.NoticiaId)
-                    .HasName("FK_TA_NOTICIA_IMAGENS_TD_NOTICIA");
+                    .HasName("FK_NOTICIAS_IMAGENS_idx");
 
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
                     .HasColumnType("bigint(20)");
 
+                entity.Property(e => e.Descricao).HasColumnType("varchar(250)");
+
                 entity.Property(e => e.Image)
                     .IsRequired()
-                    .HasColumnName("IMAGE");
+                    .HasColumnName("IMAGE")
+                    .HasColumnType("longtext");
 
                 entity.Property(e => e.NoticiaId)
                     .HasColumnName("NOTICIA_ID")
@@ -155,7 +158,7 @@ namespace SoliSocialWebApi.Models
                     .WithMany(p => p.TaNoticiaImagens)
                     .HasForeignKey(d => d.NoticiaId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TA_NOTICIA_IMAGENS_TD_NOTICIA");
+                    .HasConstraintName("FK_NOTICIAS_IMAGENS");
             });
 
             modelBuilder.Entity<TaParticEvento>(entity =>
@@ -618,6 +621,15 @@ namespace SoliSocialWebApi.Models
                     .HasColumnName("ID")
                     .HasColumnType("bigint(20)");
 
+                entity.Property(e => e.Banner)
+                    .HasColumnName("BANNER")
+                    .HasColumnType("longtext");
+
+                entity.Property(e => e.Corpo)
+                    .IsRequired()
+                    .HasColumnName("CORPO")
+                    .HasColumnType("longtext");
+
                 entity.Property(e => e.CriadoPor)
                     .IsRequired()
                     .HasColumnName("CRIADO_POR")
@@ -630,11 +642,6 @@ namespace SoliSocialWebApi.Models
                 entity.Property(e => e.DataCriacao)
                     .HasColumnName("DATA_CRIACAO")
                     .HasColumnType("datetime");
-
-                entity.Property(e => e.Descricao)
-                    .IsRequired()
-                    .HasColumnName("DESCRICAO")
-                    .HasColumnType("varchar(250)");
 
                 entity.Property(e => e.EventoId)
                     .HasColumnName("EVENTO_ID")
@@ -650,10 +657,10 @@ namespace SoliSocialWebApi.Models
                     .HasColumnName("NOME")
                     .HasColumnType("varchar(250)");
 
-                entity.Property(e => e.Pagina)
+                entity.Property(e => e.Resumo)
                     .IsRequired()
-                    .HasColumnName("PAGINA")
-                    .HasColumnType("longtext");
+                    .HasColumnName("RESUMO")
+                    .HasColumnType("varchar(250)");
 
                 entity.HasOne(d => d.CriadoPorNavigation)
                     .WithMany(p => p.TdNoticias)
