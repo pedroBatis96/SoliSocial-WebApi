@@ -45,6 +45,8 @@ namespace SoliSocialWebApi.Controllers
                                            t.Phonenumber,
                                            t.PhonenumberConfirmed,
                                            t.Username,
+                                           Favoritos = t.TaUserInstituicaoFav.Select(fav => new { fav.Instituicao.Logo, fav.Instituicao.Acronimo, fav.InstituicaoId }),
+                                           Bloqueados = t.TaUserInstituicaoBlock.Select(block => new { block.InstituicaoId }),
                                            InstituicaoList = t.TaStaffInstituicao.Where(y => y.UserId == t.Id).Select(y => new { y.Instituicao.Acronimo, y.Instituicao.Id, y.Instituicao.Logo })
                                        })
                                        .FirstOrDefault(t => t.Id == User.Claims.First().Value);
@@ -55,9 +57,9 @@ namespace SoliSocialWebApi.Controllers
         public ActionResult<string> GetFavBlock()
         {
             string userId = User.Claims.First().Value;
-            var favorites = context.TdInstituicao.Where(y => y.TaUserInstituicaoFav.Any(fav => fav.UserId == userId)).Select(y=>new { y.Id, y.Logo, y.Nome });
+            var favorites = context.TdInstituicao.Where(y => y.TaUserInstituicaoFav.Any(fav => fav.UserId == userId)).Select(y => new { y.Id, y.Logo, y.Nome });
             var block = context.TdInstituicao.Where(y => y.TaUserInstituicaoBlock.Any(fav => fav.UserId == userId)).Select(y => new { y.Id, y.Logo, y.Nome });
-            return JsonConvert.SerializeObject(new { favorites,block });
+            return JsonConvert.SerializeObject(new { favorites, block });
         }
 
         /// <summary>
@@ -70,6 +72,39 @@ namespace SoliSocialWebApi.Controllers
         {
             var user = context.TdUsers.Select(t => new { t.Imagem, t.Bio, t.Username, t.Id, t.Genero, t.Age, t.Email, t.Phonenumber }).FirstOrDefault(t => t.Id == model.UserId);
             return JsonConvert.SerializeObject(user);
+        }
+
+        /// <summary>
+        /// Gets info of user by Id
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost("getUserFeed")]
+        public ActionResult<string> GetUserFeed([FromBody]GetUserFeed model)
+        {
+            var user = context.TdUsers.FirstOrDefault(t => t.Id == User.Claims.First().Value);
+
+            if (model.InstId == "0")
+            {
+                try
+                {
+                    var result = context.TdNoticias.Where(t => t.Inst.TaUserInstituicaoBlock.All(bl => bl.UserId != user.Id))
+                        .Select(t=>new {InstId=t.Inst.Id,t.Id,t.DataCriacao,t.Nome,t.Resumo,t.Banner,t.Inst.Acronimo,t.Inst.Logo}).OrderByDescending(t=>t.DataCriacao);
+
+                    return JsonConvert.SerializeObject(result);
+                }
+                catch(Exception ex)
+                {
+                    return (BadRequest(new { err = "" }));
+                }
+            }
+            else
+            {
+                var result = context.TdNoticias.Where(t => t.InstId == model.InstId)
+                    .Select(t => new { InstId = t.Inst.Id, t.Id, t.DataCriacao, t.Nome, t.Resumo, t.Banner, t.Inst.Acronimo, t.Inst.Logo })
+                    .OrderByDescending(t => t.DataCriacao);
+                return JsonConvert.SerializeObject(result);
+            }
         }
 
         /// <summary>
@@ -166,36 +201,6 @@ namespace SoliSocialWebApi.Controllers
             return JsonConvert.SerializeObject(new { pertence, favoritos });
         }
 
-        //private UserInfoSent mapToUser(TdUsers user)
-        //{
-        //    var result = new UserInfoSent
-        //    {
-        //        Id = user.Id,
-        //        DateOfBirth = user.DateOfBirth,
-        //        Email = user.Email,
-        //        EmailConfirmed = user.EmailConfirmed,
-        //        Genero = user.Genero,
-        //        Imagem = user.Imagem,
-        //        Name = user.Name,
-        //        Bio = user.Bio,
-        //        Phonenumber = user.Phonenumber,
-        //        PhonenumberConfirmed = user.PhonenumberConfirmed,
-        //        Username = user.Username,
-        //    };
-        //    result.InstituicaoList = new List<UserInfoSent.tdInsituicaoInfo>();
-        //    foreach (var instituicao in user.TaStaffInstituicao)
-        //    {
-        //        var inst = context.TdInstituicao.Where(t => t.Id == instituicao.InstituicaoId).FirstOrDefault();
-        //        result.InstituicaoList.Add(new UserInfoSent.tdInsituicaoInfo
-        //        {
-        //            Acronimo = inst.Acronimo,
-        //            Id = inst.Id,
-        //            Logo = inst.Logo
-        //        });
-        //    }
-
-        //    return result;
-        //}
     }
 
 

@@ -47,7 +47,21 @@ namespace SoliSocialWebApi.Controllers.Institution
                                   .Include(n => n.TdNoticias)
                                   .Include(e => e.TdEvento)
                                   .Include(f => f.TaUserInstituicaoFav)
-                                  .Select(t=> new {t.Id, t.Nome,t.Logo,t.TaStaffInstituicao,t.TdNoticias,t.TdEvento,t.TaUserInstituicaoFav,t.Descricao,t.Email,t.Phonenumber,t.CodigoPostal,t.Morada,t.Pagina})
+                                  .Select(t=> new {
+                                      t.Id,
+                                      t.Nome,
+                                      t.Logo,
+                                      t.TaStaffInstituicao,
+                                      Noticias = t.TdNoticias.OrderBy(y=>y.DataCriacao),
+                                      Eventos = t.TdEvento.OrderBy(e=>e.DataCriacao),
+                                      t.TaUserInstituicaoFav,
+                                      t.Descricao,
+                                      t.Email,
+                                      t.Phonenumber,
+                                      t.CodigoPostal,
+                                      t.Morada,
+                                      t.Pagina
+                                  })
                                   .FirstOrDefault(t => t.Id == model.InstId.ToString());
 
                 if (instituicao.TaUserInstituicaoFav.FirstOrDefault(t => t.UserId == userId && t.InstituicaoId == model.InstId) != null)

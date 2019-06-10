@@ -9,4 +9,9 @@ namespace SoliSocialWebApi.ViewModels.UserManagement
     {
         public string UserId { get; set; }
     }
+
+    public class GetUserFeed
+    {
+        public string InstId { get; set; }
+    }
 }
