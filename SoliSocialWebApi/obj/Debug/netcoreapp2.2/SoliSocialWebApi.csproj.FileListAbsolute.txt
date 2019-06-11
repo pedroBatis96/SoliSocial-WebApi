@@ -17,6 +17,7 @@ C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\Soli
 C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\SoliSocialWebApi\bin\Debug\netcoreapp2.2\SoliSocialWebApi.runtimeconfig.dev.json
 C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\SoliSocialWebApi\bin\Debug\netcoreapp2.2\SoliSocialWebApi.dll
 C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\SoliSocialWebApi\bin\Debug\netcoreapp2.2\SoliSocialWebApi.pdb
+C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\SoliSocialWebApi\obj\Debug\netcoreapp2.2\SoliSocialWebApi.csprojAssemblyReference.cache
 C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\SoliSocialWebApi\obj\Debug\netcoreapp2.2\SoliSocialWebApi.csproj.CoreCompileInputs.cache
 C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\SoliSocialWebApi\obj\Debug\netcoreapp2.2\SoliSocialWebApi.RazorAssemblyInfo.cache
 C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\SoliSocialWebApi\obj\Debug\netcoreapp2.2\SoliSocialWebApi.RazorAssemblyInfo.cs
@@ -25,4 +26,3 @@ C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\Soli
 C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\SoliSocialWebApi\obj\Debug\netcoreapp2.2\SoliSocialWebApi.RazorTargetAssemblyInfo.cache
 C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\SoliSocialWebApi\obj\Debug\netcoreapp2.2\SoliSocialWebApi.dll
 C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\SoliSocialWebApi\obj\Debug\netcoreapp2.2\SoliSocialWebApi.pdb
-C:\Users\batpe\Desktop\4\Projecto\Teste\SoliSocial-WebApi\SoliSocial-WebApi\SoliSocialWebApi\obj\Debug\netcoreapp2.2\SoliSocialWebApi.csprojAssemblyReference.cache

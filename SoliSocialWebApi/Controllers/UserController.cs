@@ -6,6 +6,7 @@ using SoliSocialWebApi.Models;
 using SoliSocialWebApi.Services.Abstraction;
 using SoliSocialWebApi.ViewModels.UserManagement;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SoliSocialWebApi.Controllers
@@ -45,7 +46,7 @@ namespace SoliSocialWebApi.Controllers
                                            t.Phonenumber,
                                            t.PhonenumberConfirmed,
                                            t.Username,
-                                           Favoritos = t.TaUserInstituicaoFav.Select(fav => new { fav.Instituicao.Logo, fav.Instituicao.Acronimo, fav.InstituicaoId }),
+                                           Favoritos = t.TaUserInstituicaoFav.Select(fav => new { fav.Instituicao.Logo, fav.Instituicao.Acronimo, fav.InstituicaoId }).OrderBy(fav=>fav.Acronimo),
                                            Bloqueados = t.TaUserInstituicaoBlock.Select(block => new { block.InstituicaoId }),
                                            InstituicaoList = t.TaStaffInstituicao.Where(y => y.UserId == t.Id).Select(y => new { y.Instituicao.Acronimo, y.Instituicao.Id, y.Instituicao.Logo })
                                        })
@@ -82,16 +83,23 @@ namespace SoliSocialWebApi.Controllers
         [HttpPost("getUserFeed")]
         public ActionResult<string> GetUserFeed([FromBody]GetUserFeed model)
         {
-            var user = context.TdUsers.FirstOrDefault(t => t.Id == User.Claims.First().Value);
+           
 
-            if (model.InstId == "0")
+            if (model.InstId == "-1")
             {
                 try
                 {
-                    var result = context.TdNoticias.Where(t => t.Inst.TaUserInstituicaoBlock.All(bl => bl.UserId != user.Id))
+                    List<IQueryable> favoritos = new List<IQueryable>();
+                    var user = context.TaUserInstituicaoFav.Where(t => t.UserId == User.Claims.First().Value).OrderBy(t=>t.Instituicao.Acronimo);
+                    var noticias = context.TdNoticias.Where(t => t.Inst.TaUserInstituicaoBlock.All(bl => bl.UserId != User.Claims.First().Value))
                         .Select(t=>new {InstId=t.Inst.Id,t.Id,t.DataCriacao,t.Nome,t.Resumo,t.Banner,t.Inst.Acronimo,t.Inst.Logo}).OrderByDescending(t=>t.DataCriacao);
 
-                    return JsonConvert.SerializeObject(result);
+                    foreach(var favorito in user)
+                    {
+                        favoritos.Add(noticias.Where(t => t.InstId == favorito.InstituicaoId));
+                    }
+
+                    return JsonConvert.SerializeObject(new {noticias,favoritos});
                 }
                 catch(Exception ex)
                 {
