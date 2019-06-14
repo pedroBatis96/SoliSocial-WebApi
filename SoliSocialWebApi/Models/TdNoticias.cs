@@ -7,7 +7,9 @@ namespace SoliSocialWebApi.Models
     {
         public TdNoticias()
         {
+            TaEventoImagem = new HashSet<TaEventoImagem>();
             TaNoticiaImagens = new HashSet<TaNoticiaImagens>();
+            TaParticEvento = new HashSet<TaParticEvento>();
         }
 
         public long Id { get; set; }
@@ -19,11 +21,13 @@ namespace SoliSocialWebApi.Models
         public DateTime DataCriacao { get; set; }
         public DateTime? DataAlteracao { get; set; }
         public string CriadoPor { get; set; }
-        public long? EventoId { get; set; }
+        public sbyte? Evento { get; set; }
 
         public virtual TdUsers CriadoPorNavigation { get; set; }
-        public virtual TdEvento Evento { get; set; }
         public virtual TdInstituicao Inst { get; set; }
+        public virtual TdEventoDetalhes TdEventoDetalhes { get; set; }
+        public virtual ICollection<TaEventoImagem> TaEventoImagem { get; set; }
         public virtual ICollection<TaNoticiaImagens> TaNoticiaImagens { get; set; }
+        public virtual ICollection<TaParticEvento> TaParticEvento { get; set; }
     }
 }

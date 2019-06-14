@@ -10,7 +10,7 @@ namespace SoliSocialWebApi.Models
         public long TarefaId { get; set; }
         public sbyte Staff { get; set; }
 
-        public virtual TdEvento Event { get; set; }
+        public virtual TdNoticias Event { get; set; }
         public virtual TdTarefas Tarefa { get; set; }
         public virtual TdUsers User { get; set; }
     }

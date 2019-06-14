@@ -36,7 +36,6 @@ namespace SoliSocialWebApi.Controllers
                                        .Select(t => new
                                        {
                                            t.Id,
-                                           t.DateOfBirth,
                                            t.Email,
                                            t.EmailConfirmed,
                                            t.Genero,
@@ -80,38 +79,27 @@ namespace SoliSocialWebApi.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost("getUserFeed")]
-        public ActionResult<string> GetUserFeed([FromBody]GetUserFeed model)
+        [HttpGet("getUserFeed")]
+        public ActionResult<string> GetUserFeed()
         {
-           
-
-            if (model.InstId == "-1")
+            try
             {
-                try
-                {
-                    List<IQueryable> favoritos = new List<IQueryable>();
-                    var user = context.TaUserInstituicaoFav.Where(t => t.UserId == User.Claims.First().Value).OrderBy(t=>t.Instituicao.Acronimo);
-                    var noticias = context.TdNoticias.Where(t => t.Inst.TaUserInstituicaoBlock.All(bl => bl.UserId != User.Claims.First().Value))
-                        .Select(t=>new {InstId=t.Inst.Id,t.Id,t.DataCriacao,t.Nome,t.Resumo,t.Banner,t.Inst.Acronimo,t.Inst.Logo}).OrderByDescending(t=>t.DataCriacao);
+                List<IQueryable> favoritos = new List<IQueryable>();
+                var user = context.TaUserInstituicaoFav.Where(t => t.UserId == User.Claims.First().Value).OrderBy(t => t.Instituicao.Acronimo);
+                var noticias = context.TdNoticias.Where(t => t.Inst.TaUserInstituicaoBlock.All(bl => bl.UserId != User.Claims.First().Value))
+                    .Select(t => new { InstId = t.Inst.Id, t.Id, t.DataCriacao, t.Nome, t.Resumo, t.Banner, t.TaNoticiaImagens.FirstOrDefault().Image, t.Inst.Acronimo, t.Inst.Logo }).OrderByDescending(t => t.DataCriacao);
 
-                    foreach(var favorito in user)
-                    {
-                        favoritos.Add(noticias.Where(t => t.InstId == favorito.InstituicaoId));
-                    }
-
-                    return JsonConvert.SerializeObject(new {noticias,favoritos});
-                }
-                catch(Exception ex)
+                foreach (var favorito in user)
                 {
-                    return (BadRequest(new { err = "" }));
+                    favoritos.Add(noticias.Where(t => t.InstId == favorito.InstituicaoId));
                 }
+
+                return JsonConvert.SerializeObject(new { noticias, favoritos });
             }
-            else
+            catch (Exception ex)
             {
-                var result = context.TdNoticias.Where(t => t.InstId == model.InstId)
-                    .Select(t => new { InstId = t.Inst.Id, t.Id, t.DataCriacao, t.Nome, t.Resumo, t.Banner, t.Inst.Acronimo, t.Inst.Logo })
-                    .OrderByDescending(t => t.DataCriacao);
-                return JsonConvert.SerializeObject(result);
+                Console.WriteLine(ex.InnerException);
+                return (BadRequest(new { err = "" }));
             }
         }
 

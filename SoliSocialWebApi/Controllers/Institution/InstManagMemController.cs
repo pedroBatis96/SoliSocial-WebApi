@@ -51,6 +51,7 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
@@ -83,6 +84,7 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
@@ -117,6 +119,7 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
@@ -152,6 +155,7 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
@@ -174,6 +178,7 @@ namespace SoliSocialWebApi.Controllers.Institution
 
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
@@ -218,6 +223,7 @@ namespace SoliSocialWebApi.Controllers.Institution
 
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
@@ -250,6 +256,7 @@ namespace SoliSocialWebApi.Controllers.Institution
 
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }

@@ -28,7 +28,7 @@ namespace SoliSocialWebApi.Models
         public virtual DbSet<TdApiClient> TdApiClient { get; set; }
         public virtual DbSet<TdDepartamentosInstituicao> TdDepartamentosInstituicao { get; set; }
         public virtual DbSet<TdDocSupp> TdDocSupp { get; set; }
-        public virtual DbSet<TdEvento> TdEvento { get; set; }
+        public virtual DbSet<TdEventoDetalhes> TdEventoDetalhes { get; set; }
         public virtual DbSet<TdInstituicao> TdInstituicao { get; set; }
         public virtual DbSet<TdNoticias> TdNoticias { get; set; }
         public virtual DbSet<TdTarefas> TdTarefas { get; set; }
@@ -444,31 +444,19 @@ namespace SoliSocialWebApi.Models
                     .HasColumnName("DOC");
             });
 
-            modelBuilder.Entity<TdEvento>(entity =>
+            modelBuilder.Entity<TdEventoDetalhes>(entity =>
             {
-                entity.ToTable("TD_EVENTO");
+                entity.HasKey(e => e.NoticiaId)
+                    .HasName("PRIMARY");
 
-                entity.HasIndex(e => e.CriadoPor)
-                    .HasName("FK_TD_EVENTO_TD_USER_idx");
+                entity.ToTable("TD_EVENTO_DETALHES");
 
                 entity.HasIndex(e => e.InstId)
                     .HasName("FK_TD_EVENTO_TD_INST_idx");
 
-                entity.Property(e => e.Id)
-                    .HasColumnName("ID")
+                entity.Property(e => e.NoticiaId)
+                    .HasColumnName("NOTICIA_ID")
                     .HasColumnType("bigint(20)");
-
-                entity.Property(e => e.CriadoPor)
-                    .HasColumnName("CRIADO_POR")
-                    .HasColumnType("varchar(64)");
-
-                entity.Property(e => e.DataAlteracao)
-                    .HasColumnName("DATA_ALTERACAO")
-                    .HasColumnType("datetime");
-
-                entity.Property(e => e.DataCriacao)
-                    .HasColumnName("DATA_CRIACAO")
-                    .HasColumnType("datetime");
 
                 entity.Property(e => e.DataFim)
                     .HasColumnName("DATA_FIM")
@@ -478,20 +466,10 @@ namespace SoliSocialWebApi.Models
                     .HasColumnName("DATA_INICIO")
                     .HasColumnType("datetime");
 
-                entity.Property(e => e.Descricao)
-                    .IsRequired()
-                    .HasColumnName("DESCRICAO")
-                    .HasColumnType("varchar(256)");
-
                 entity.Property(e => e.InstId)
                     .IsRequired()
                     .HasColumnName("INST_ID")
                     .HasColumnType("varchar(64)");
-
-                entity.Property(e => e.Nome)
-                    .IsRequired()
-                    .HasColumnName("NOME")
-                    .HasColumnType("varchar(256)");
 
                 entity.Property(e => e.NumParticipantesMax)
                     .HasColumnName("NUM_PARTICIPANTES_MAX")
@@ -501,20 +479,11 @@ namespace SoliSocialWebApi.Models
                     .HasColumnName("NUM_STAFF_MAXIMO")
                     .HasColumnType("int(11)");
 
-                entity.Property(e => e.Pagina)
-                    .HasColumnName("PAGINA")
-                    .HasColumnType("longtext");
-
-                entity.HasOne(d => d.CriadoPorNavigation)
-                    .WithMany(p => p.TdEvento)
-                    .HasForeignKey(d => d.CriadoPor)
-                    .HasConstraintName("FK_TD_EVENTO_TD_USER");
-
-                entity.HasOne(d => d.Inst)
-                    .WithMany(p => p.TdEvento)
-                    .HasForeignKey(d => d.InstId)
+                entity.HasOne(d => d.Noticia)
+                    .WithOne(p => p.TdEventoDetalhes)
+                    .HasForeignKey<TdEventoDetalhes>(d => d.NoticiaId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TD_EVENTO_TD_INST");
+                    .HasConstraintName("FK_TD_EVENTO_TD_NOTICIA");
             });
 
             modelBuilder.Entity<TdInstituicao>(entity =>
@@ -611,7 +580,7 @@ namespace SoliSocialWebApi.Models
                 entity.HasIndex(e => e.CriadoPor)
                     .HasName("FK_TD_NOTICIAS_TD_USER_idx");
 
-                entity.HasIndex(e => e.EventoId)
+                entity.HasIndex(e => e.Evento)
                     .HasName("FK_TD_NOTICIAS_TD_EVENTO_idx");
 
                 entity.HasIndex(e => e.InstId)
@@ -643,9 +612,10 @@ namespace SoliSocialWebApi.Models
                     .HasColumnName("DATA_CRIACAO")
                     .HasColumnType("datetime");
 
-                entity.Property(e => e.EventoId)
-                    .HasColumnName("EVENTO_ID")
-                    .HasColumnType("bigint(20)");
+                entity.Property(e => e.Evento)
+                    .HasColumnName("EVENTO")
+                    .HasColumnType("tinyint(1)")
+                    .HasDefaultValueSql("'0'");
 
                 entity.Property(e => e.InstId)
                     .IsRequired()
@@ -655,7 +625,7 @@ namespace SoliSocialWebApi.Models
                 entity.Property(e => e.Nome)
                     .IsRequired()
                     .HasColumnName("NOME")
-                    .HasColumnType("varchar(250)");
+                    .HasColumnType("varchar(60)");
 
                 entity.Property(e => e.Resumo)
                     .IsRequired()
@@ -667,11 +637,6 @@ namespace SoliSocialWebApi.Models
                     .HasForeignKey(d => d.CriadoPor)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_TD_NOTICIAS_TD_USER");
-
-                entity.HasOne(d => d.Evento)
-                    .WithMany(p => p.TdNoticias)
-                    .HasForeignKey(d => d.EventoId)
-                    .HasConstraintName("FK_TD_NOTICIAS_TD_EVENTO");
 
                 entity.HasOne(d => d.Inst)
                     .WithMany(p => p.TdNoticias)

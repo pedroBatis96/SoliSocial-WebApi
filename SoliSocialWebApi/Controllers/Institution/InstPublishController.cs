@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SoliSocialWebApi.Models;
 using SoliSocialWebApi.Services.Abstraction;
+using SoliSocialWebApi.ViewModels.InstitutionManagement;
 using SoliSocialWebApi.ViewModels.News;
 
 namespace SoliSocialWebApi.Controllers.Institution
@@ -60,6 +61,7 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
@@ -79,6 +81,46 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
+                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
+            }
+        }
+
+        [HttpPost("getNewsByInst")]
+        public ActionResult<string> GetNewsByInst([FromBody]InstitutionMain model)
+        {
+            try
+            {
+                var result = context.TdNoticias.Where(t => t.InstId == model.InstId)
+                    .Select(t => new {t.Inst.Logo,t.DataCriacao, t.Id, t.Nome, t.Banner, t.TaNoticiaImagens.FirstOrDefault().Image })
+                    .OrderByDescending(t=>t.DataCriacao);
+                return JsonConvert.SerializeObject(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.InnerException);
+                return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
+            }
+        }
+
+        [HttpPost("delNews")]
+        public ActionResult<string> DelNews([FromBody]PublishNewsGet model)
+        {
+            try
+            {
+                var result = context.TdNoticias.Include(i => i.TaNoticiaImagens).Where(t => t.Id == model.NewsId).FirstOrDefault();
+                foreach (var image in result.TaNoticiaImagens)
+                {
+                    context.TaNoticiaImagens.Remove(image);
+                }
+                context.SaveChanges();
+                context.TdNoticias.Remove(result);
+                context.SaveChanges();
+                return JsonConvert.SerializeObject("true");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }

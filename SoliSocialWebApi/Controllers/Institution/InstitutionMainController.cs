@@ -45,15 +45,13 @@ namespace SoliSocialWebApi.Controllers.Institution
                 var instituicao = context.TdInstituicao
                                   .Include(si => si.TaStaffInstituicao)
                                   .Include(n => n.TdNoticias)
-                                  .Include(e => e.TdEvento)
                                   .Include(f => f.TaUserInstituicaoFav)
                                   .Select(t=> new {
                                       t.Id,
                                       t.Nome,
                                       t.Logo,
                                       t.TaStaffInstituicao,
-                                      Noticias = t.TdNoticias.OrderBy(y=>y.DataCriacao),
-                                      Eventos = t.TdEvento.OrderBy(e=>e.DataCriacao),
+                                      Noticias = t.TdNoticias.Select(n => new { n.Id,n.Evento, n.DataCriacao, n.Nome, n.Resumo, n.Banner, n.TaNoticiaImagens.FirstOrDefault().Image, n.Inst.Acronimo, n.Inst.Logo }).OrderByDescending(n=>n.DataCriacao),
                                       t.TaUserInstituicaoFav,
                                       t.Descricao,
                                       t.Email,
@@ -83,10 +81,10 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
-
 
         [HttpPost("handleFavorite")]
         public ActionResult<bool> HandleFavorite([FromBody]InstitutionMain model)
@@ -117,6 +115,7 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
@@ -143,6 +142,7 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
@@ -169,6 +169,7 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }
@@ -192,6 +193,7 @@ namespace SoliSocialWebApi.Controllers.Institution
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.InnerException);
                 return (BadRequest(new { err = "Ocorreu um erro, por favor tente mais tarde" }));
             }
         }

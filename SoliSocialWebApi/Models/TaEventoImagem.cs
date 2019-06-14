@@ -9,6 +9,6 @@ namespace SoliSocialWebApi.Models
         public long EventoId { get; set; }
         public byte[] Imagem { get; set; }
 
-        public virtual TdEvento Evento { get; set; }
+        public virtual TdNoticias Evento { get; set; }
     }
 }

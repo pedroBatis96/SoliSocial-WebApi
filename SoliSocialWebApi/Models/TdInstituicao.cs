@@ -13,7 +13,6 @@ namespace SoliSocialWebApi.Models
             TaUserInstituicaoBlock = new HashSet<TaUserInstituicaoBlock>();
             TaUserInstituicaoFav = new HashSet<TaUserInstituicaoFav>();
             TdDepartamentosInstituicao = new HashSet<TdDepartamentosInstituicao>();
-            TdEvento = new HashSet<TdEvento>();
             TdNoticias = new HashSet<TdNoticias>();
             TdTarefas = new HashSet<TdTarefas>();
         }
@@ -41,7 +40,6 @@ namespace SoliSocialWebApi.Models
         public virtual ICollection<TaUserInstituicaoBlock> TaUserInstituicaoBlock { get; set; }
         public virtual ICollection<TaUserInstituicaoFav> TaUserInstituicaoFav { get; set; }
         public virtual ICollection<TdDepartamentosInstituicao> TdDepartamentosInstituicao { get; set; }
-        public virtual ICollection<TdEvento> TdEvento { get; set; }
         public virtual ICollection<TdNoticias> TdNoticias { get; set; }
         public virtual ICollection<TdTarefas> TdTarefas { get; set; }
     }
